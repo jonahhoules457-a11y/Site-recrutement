@@ -69,7 +69,7 @@ function showRules() {
       <p><strong>29. Image du LSSD</strong><br>Vous devez représenter une image sérieuse.</p>
       <p><strong>30. Sanctions internes</strong><br>Tout manquement peut entraîner rétrogradation ou exclusion.</p>
     </div>
-    <button onclick="validateRules()">J'ai lu et j'accepte</button>
+    <button id="validateBtn" onclick="validateRules()" disabled style="opacity:0.5;cursor:not-allowed;">J'ai lu et j'accepte</button>
   `;
 
   const interval = setInterval(() => {
@@ -78,6 +78,10 @@ function showRules() {
     if(timeLeft <= 0) {
       canAccess = true;
       clearInterval(interval);
+      const btn = document.getElementById("validateBtn");
+      btn.disabled = false;
+      btn.style.opacity = "1";
+      btn.style.cursor = "pointer";
     }
   }, 1000);
 }
