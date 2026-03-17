@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>LSSD - Recrutement Officiel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body { margin:0; font-family:'Orbitron', sans-serif; background:linear-gradient(180deg,#020617,#0f172a); color:white; }
+    .container { max-width:900px; margin:auto; padding:20px; }
+    h1 { text-align:center; color:#38bdf8; }
+    .question { background:#020617; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:0 0 10px #0ea5e9; }
+    label { display:block; margin-bottom:8px; }
+    button { width:100%; padding:15px; background:#22c55e; border:none; font-size:16px; cursor:pointer; border-radius:10px; }
+    .discord-btn { background:#5865F2; margin-bottom:15px; }
+    .progress { height:10px; background:#1e293b; border-radius:10px; margin-bottom:20px; }
+    .progress-bar { height:100%; width:0%; background:#22c55e; border-radius:10px; }
+    .result { text-align:center; margin-top:50px; }
+  </style>
+</head>
+<body>
+<div class="container" id="app">
+  <h1>LSSD - BCSO Recrutement</h1>
+
+  <button class="discord-btn" onclick="loginDiscord()">🔗 Se connecter avec Discord</button>
+
+  <div class="progress"><div class="progress-bar" id="progress"></div></div>
+
+  <form id="quizForm">
+    <div id="questions"></div>
+
+    <input type="hidden" id="discord" name="discord">
+
+    <button type="submit">Envoyer la candidature</button>
+  </form>
+</div>
+
+<script>
+const CLIENT_ID = "1225425707870453792";
+const REDIRECT_URI = window.location.origin + window.location.pathname;
+
+function loginDiscord() {
+  const url = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=identify`;
+  window.location.href = url;
+}
+
+const hash = window.location.hash;
+if(hash.includes("access_token")) {
+  const token = new URLSearchParams(hash.substring(1)).get("access_token");
+
+  fetch("https://discord.com/api/users/@me", {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("discord").value = `${data.username}`;
+  });
+}
+
+const questions = [
+  {q:"Que signifie LSSD ?", choices:["Los Santos Sheriff Department","Los Santos Security Division","Los Santos Service Department"], correct:"Los Santos Sheriff Department"},
+  {q:"Dans quel comté opère le LSSD ?", choices:["Los Santos","Blaine County","Vice City"], correct:"Blaine County"},
+  {q:"Rôle principal du shérif ?", choices:["Faire du RP civil","Maintenir l'ordre","Construire des routes"], correct:"Maintenir l'ordre"},
+  {q:"Que faire lors d'un contrôle ?", choices:["Respecter le RP","Ignorer","Fuir direct"], correct:"Respecter le RP"},
+  {q:"Une arrestation doit être ?", choices:["RP","Rapide sans RP","Ignorée"], correct:"RP"},
+  {q:"Utilisation du taser ?", choices:["RP uniquement","Fun","Jamais"], correct:"RP uniquement"},
+  {q:"Code radio important ?", choices:["Oui","Non","Inutile"], correct:"Oui"},
+  {q:"Priorité en intervention ?", choices:["Sécurité","Fun","Vitesse"], correct:"Sécurité"},
+  {q:"En poursuite ?", choices:["Respect RP","Foncer sans réfléchir","Quitter"], correct:"Respect RP"},
+  {q:"Respect hiérarchie ?", choices:["Oui","Non","Option"], correct:"Oui"},
+  {q:"Peut-on tirer sans raison ?", choices:["Oui","Non","Parfois"], correct:"Non"},
+  {q:"Communication radio ?", choices:["Clair et RP","Crier","Inutile"], correct:"Clair et RP"},
+  {q:"Un suspect coopératif ?", choices:["RP calme","Violence","Ignorer"], correct:"RP calme"},
+  {q:"Usage arme ?", choices:["Dernier recours","Direct","Jamais"], correct:"Dernier recours"},
+  {q:"Respect civil ?", choices:["Oui","Non","Option"], correct:"Oui"},
+  {q:"Menottage ?", choices:["RP","Sans raison","Jamais"], correct:"RP"},
+  {q:"Fouille ?", choices:["Avec RP","Sans RP","Jamais"], correct:"Avec RP"},
+  {q:"Backup ?", choices:["Important","Inutile","Option"], correct:"Important"},
+  {q:"Patrouille ?", choices:["RP","Fun","Inutile"], correct:"RP"},
+  {q:"Tenue correcte ?", choices:["Oui","Non","Option"], correct:"Oui"},
+  {q:"Code 10-4 ?", choices:["Reçu","Stop","Erreur"], correct:"Reçu"},
+  {q:"Code 10-20 ?", choices:["Position","Erreur","Stop"], correct:"Position"},
+  {q:"Appel renfort ?", choices:["Radio","SMS","Rien"], correct:"Radio"},
+  {q:"Scène RP ?", choices:["Respect","Rush","Quit"], correct:"Respect"},
+  {q:"Arrestation violente ?", choices:["Si nécessaire","Toujours","Jamais"], correct:"Si nécessaire"},
+  {q:"Hiérarchie importante ?", choices:["Oui","Non","Option"], correct:"Oui"},
+  {q:"Ordres supérieurs ?", choices:["Respecter","Ignorer","Discuter"], correct:"Respecter"},
+  {q:"Comportement ?", choices:["Professionnel","Toxique","Fun"], correct:"Professionnel"},
+  {q:"RP sérieux ?", choices:["Oui","Non","Option"], correct:"Oui"},
+  {q:"Sanction abus ?", choices:["Oui","Non","Jamais"], correct:"Oui"}
+];
+
+const container = document.getElementById("questions");
+const progress = document.getElementById("progress");
+
+questions.forEach((item, index) => {
+  const div = document.createElement("div");
+  div.classList.add("question");
+
+  let html = `<label>${index+1}. ${item.q}</label>`;
+  item.choices.forEach(choice => {
+    html += `<label><input type="radio" name="q${index}" value="${choice}" required> ${choice}</label>`;
+  });
+
+  div.innerHTML = html;
+  container.appendChild(div);
+});
+
+document.addEventListener("change", () => {
+  const total = questions.length;
+  const answered = document.querySelectorAll("input[type=radio]:checked").length;
+  progress.style.width = (answered/total)*100 + "%";
+});
+
+document.getElementById("quizForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  let wrong = 0;
+  const formData = new FormData(this);
+  let answersText = "";
+
+  questions.forEach((item, index) => {
+    const answer = formData.get(`q${index}`);
+    if(answer !== item.correct) wrong++;
+    answersText += `Q${index+1}: ${answer} | ✅ ${item.correct}\n`;
+  });
+
+  const discord = formData.get("discord") || "Non connecté";
+  const result = wrong >= 7 ? "REFUSÉ ❌" : "ACCEPTÉ ✅";
+
+  await fetch("https://discord.com/api/webhooks/1483574247690338546/Kj2yvCKANziypssbfw1i5A9n3yx44riqrXLvBI3HMNHsSOTwnOJxxHE_r9t4W147yZYW", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      content:`📋 Nouvelle candidature LSSD\n👤 Discord: ${discord}\n\n📊 Résultat: ${result}\n❌ Mauvaises réponses: ${wrong}/30\n\n🧠 Réponses:\n${answersText}`
+    })
+  });
+
+  const app = document.getElementById("app");
+
+  if(wrong >= 7) {
+    app.innerHTML = `<div class="result">
+      <h1>❌ REFUSÉ</h1>
+      <p>Tu as fait ${wrong} erreurs.</p>
+      <p>Tu peux retenter dans <strong>5 jours</strong>.</p>
+    </div>`;
+  } else {
+    app.innerHTML = `<div class="result">
+      <h1>✅ ACCEPTÉ</h1>
+      <p>Félicitations !</p>
+      <p>Fais une demande dans :</p>
+      <p><strong>#demande-de-grade</strong></p>
+    </div>`;
+  }
+});
+</script>
+</body>
+</html>
